@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:netflix_clone/model/model_movie.dart';
+import 'package:netflix_clone/widget/box_slider.dart';
 import 'package:netflix_clone/widget/carousel_slider.dart';
+import 'package:netflix_clone/widget/circle_slider.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -8,40 +11,34 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Movie> movies = [
-    Movie.fromMap({
-      'title': '사랑의 불시착',
-      'keyword': '사랑/로맨스/판타지',
-      'poster': 'test_movie_1.png',
-      'like': false
-    }),
-    Movie.fromMap({
-      'title': '사랑의 불시착',
-      'keyword': '사랑/로맨스/판타지',
-      'poster': 'test_movie_1.png',
-      'like': false
-    }),
-    Movie.fromMap({
-      'title': '사랑의 불시착',
-      'keyword': '사랑/로맨스/판타지',
-      'poster': 'test_movie_1.png',
-      'like': false
-    }),
-    Movie.fromMap({
-      'title': '사랑의 불시착',
-      'keyword': '사랑/로맨스/판타지',
-      'poster': 'test_movie_1.png',
-      'like': false
-    })
-  ];
+  Firestore firestore = Firestore.instance;
+  Stream<QuerySnapshot> streamData;
+
 
   @override
   void initState() {
     super.initState();
+    //스트림에 파이어스토어 DB 속 movie 컬렉션을 스냅샷형태로 넣어준다.
+    streamData = firestore.collection('movie').snapshots();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _fetchData(BuildContext context){
+    return StreamBuilder<QuerySnapshot>(
+        // stream: Firestore.instance.collection('movie').snapshots(),
+      stream: Firestore.instance.collection('movie').snapshots(),
+        builder: (context, snapshot){
+        //스냅샷에 데이터가 없으면 LinearProgressIndicator 로 로딩화면을 만들어준다.
+          //아니면 _buildBody 를 리턴(영화 몸체)
+          if(!snapshot.hasData) return LinearProgressIndicator();
+          return _buildBody(context, snapshot.data.documents);
+        },
+    );
+  }
+
+  Widget _buildBody(BuildContext context, List<DocumentSnapshot> snapshot){
+    ///매개변수로 들어온 snapshot list 를 map 함수를 이용해 Movie 모델 형태로 바꾸고,
+    /// toList 를 이용해 리스트 형태로 변환해 넣어준다.
+    List<Movie> movies = snapshot.map((d) => Movie.fromSnapshot(d)).toList();
     return ListView(
       children: [
         // 기본적으로 Stack 은 LIFO 이므로 맨 처음에 넣은게 밑에 깔린다.
@@ -51,8 +48,14 @@ class _HomeScreenState extends State<HomeScreen> {
             TopBar(),
           ],
         ),
+        CircleSlider(movies: movies,),
+        BoxSlider(movies: movies,),
       ],
     );
+  }
+  @override
+  Widget build(BuildContext context) {
+    return _fetchData(context);
   }
 }
 

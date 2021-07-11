@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:netflix_clone/model/model_movie.dart';
+import 'package:netflix_clone/screen/detail_screen.dart';
 
 class CarouselImage extends StatefulWidget {
   final List<Movie> movies;
@@ -25,7 +26,7 @@ class _CarouselImageState extends State<CarouselImage> {
   void initState() {
     super.initState();
     movies = widget.movies;
-    images = movies.map((m) => Image.asset('./images/' + m.poster)).toList();
+    images = movies.map((m) => Image.network(m.poster)).toList();
     keywords = movies.map((m) => m.keyword).toList();
     likes = movies.map((m) => m.like).toList();
     _currentKeyword = keywords[0];
@@ -64,8 +65,23 @@ class _CarouselImageState extends State<CarouselImage> {
                     children: [
                       likes[_currentPage]
                           ? IconButton(
-                              onPressed: () {}, icon: Icon(Icons.check))
-                          : IconButton(onPressed: () {}, icon: Icon(Icons.add)),
+                              onPressed: () {
+                                setState(() {
+                                  likes[_currentPage] = !likes[_currentPage];
+                                  movies[_currentPage].reference.updateData(
+                                      {'like': likes[_currentPage]});
+                                });
+                              },
+                              icon: Icon(Icons.check))
+                          : IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  likes[_currentPage] = !likes[_currentPage];
+                                  movies[_currentPage].reference.updateData(
+                                      {'like': likes[_currentPage]});
+                                });
+                              },
+                              icon: Icon(Icons.add)),
                       Text(
                         '내가 찜한 콘텐츠',
                         style: TextStyle(fontSize: 11),
@@ -98,7 +114,15 @@ class _CarouselImageState extends State<CarouselImage> {
                     children: [
                       IconButton(
                         icon: Icon(Icons.info),
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute<Null>(
+                              fullscreenDialog: true,
+                              builder: (BuildContext context) {
+                                return DetailScreen(
+                                  movie: movies[_currentPage],
+                                );
+                              }));
+                        },
                       ),
                       Text(
                         '정보',
