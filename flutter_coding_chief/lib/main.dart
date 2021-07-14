@@ -8,7 +8,7 @@ void main() => runApp(MyApp());
 //runApp 에는 Widget 이 들어간다.
 
 class MyApp extends StatelessWidget {
-  final String appTitle = 'BBANTO';
+  final String appTitle = 'Character Information';
 
   @override
   Widget build(BuildContext context) {
