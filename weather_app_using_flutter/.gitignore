@@ -1,3 +1,5 @@
+# To Hide API KEY
+*.env
 # Miscellaneous
 *.class
 *.log
